@@ -101,3 +101,24 @@ class MoeModel(models.BaseModel):
     final_probabilities = tf.reshape(final_probabilities_by_class_and_batch,
                                      [-1, vocab_size])
     return {"predictions": final_probabilities}
+
+
+class M3LModel(models.BaseModel):
+  """Special case of Max-Margin Multi-Label Classification"""
+
+  def create_model(self, model_input, vocab_size, l2_penalty=1e-8, **unused_params):
+    """Creates a 1-vs-All formulation of Max-Margin Multi-Label Classification Model.
+    https://manikvarma.github.io/pubs/hariharan12.pdf
+
+    Args:
+      model_input: 'batch' x 'num_features' matrix of input features.
+      vocab_size: The number of classes in the dataset.
+
+    Returns:
+      A dictionary with a tensor containing the probability predictions of the
+      model in the 'predictions' key. The dimensions of the tensor are
+      batch_size x num_classes."""
+    output = slim.fully_connected(
+        model_input, vocab_size, activation_fn=None,
+        weights_regularizer=slim.l2_regularizer(l2_penalty))
+    return {"predictions": output}
