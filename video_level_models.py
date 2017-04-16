@@ -101,3 +101,30 @@ class MoeModel(models.BaseModel):
     final_probabilities = tf.reshape(final_probabilities_by_class_and_batch,
                                      [-1, vocab_size])
     return {"predictions": final_probabilities}
+
+
+class SimpleNNModel(models.BaseModel):
+  def create_model(self,
+                   model_input,
+                   vocab_size,
+                   num_mixtures=None,
+                   l2_penalty=1e-8,
+                   **unused_params):
+    num_mixtures = num_mixtures or FLAGS.moe_num_mixtures
+
+    # TODO: Refine it
+    expanded_dim = num_mixtures * model_input.get_shape().as_list()[1]
+
+    expansion = slim.fully_connected(
+        model_input,
+        expanded_dim,
+        activation_fn=slim.nn.relu,
+        biases_initializer=None,
+        weights_regularizer=slim.l2_regularizer(l2_penalty),
+        scope="expansion"
+    )
+
+    output = slim.fully_connected(
+        expansion, vocab_size, activation_fn=tf.nn.sigmoid,
+        weights_regularizer=slim.l2_regularizer(l2_penalty))
+    return {"predictions": output}
