@@ -118,7 +118,7 @@ class SimpleNNModel(models.BaseModel):
     expansion = slim.fully_connected(
         model_input,
         expanded_dim,
-        activation_fn=slim.nn.relu,
+        activation_fn=tf.square,
         biases_initializer=None,
         weights_regularizer=slim.l2_regularizer(l2_penalty),
         scope="expansion"
