@@ -112,12 +112,10 @@ class SimpleNNModel(models.BaseModel):
                    **unused_params):
     num_mixtures = num_mixtures or FLAGS.moe_num_mixtures
 
-    # TODO: Refine it
-    expanded_dim = num_mixtures * model_input.get_shape().as_list()[1]
-
+    nonlinear_dim = 500
     expansion = slim.fully_connected(
         model_input,
-        expanded_dim,
+        nonlinear_dim,
         activation_fn=tf.square,
         biases_initializer=None,
         weights_regularizer=slim.l2_regularizer(l2_penalty),
@@ -125,6 +123,8 @@ class SimpleNNModel(models.BaseModel):
     )
 
     output = slim.fully_connected(
-        expansion, vocab_size, activation_fn=tf.nn.sigmoid,
+        tf.concat([expansion, model_input], 1), vocab_size,
+        activation_fn=tf.nn.sigmoid,
         weights_regularizer=slim.l2_regularizer(l2_penalty))
+
     return {"predictions": output}
