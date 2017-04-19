@@ -121,6 +121,7 @@ class SimpleNNModel(models.BaseModel):
         weights_regularizer=slim.l2_regularizer(l2_penalty),
         scope="expansion"
     )
+    expansion = slim.dropout(expansion, 0.5)
 
     gate_activations = slim.fully_connected(
         expansion,
